@@ -1,60 +1,70 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setSuccess(false)
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
 
     if (!email || !password) {
-      setError('Email and password required')
-      return
+      setError("Email and password required");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Login failed')
-        return
+        setError(data.error || "Login failed");
+        return;
       }
 
-      setSuccess(true)
+      setSuccess(true);
       setTimeout(() => {
-        if (data.user.role === 'admin') {
-          router.push('/admin')
-        } else {
-          router.push('/dashboard')
+        if (!data.user.isverify) {
+          router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+          return;
         }
-      }, 1000)
+        if (data.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/student");
+        }
+      }, 1000);
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError("An error occurred. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -105,17 +115,20 @@ export function LoginForm() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? "Logging in..." : "Log In"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-primary hover:underline font-medium">
+            Don't have an account?{" "}
+            <Link
+              href="/signup"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up
             </Link>
           </p>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

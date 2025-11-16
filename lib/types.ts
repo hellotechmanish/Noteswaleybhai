@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   isVerified: boolean;
-  role: 'student' | 'admin';
+  role: "student" | "admin";
   createdAt: string;
 }
 
@@ -34,7 +34,7 @@ export interface Note {
   description?: string;
   pdfPath: string;
   fileSize?: number;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   rejectionReason?: string;
   earnings: number;
   approvedAt?: string;
@@ -47,17 +47,20 @@ export interface Payment {
   noteId?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
-  type: 'view' | 'download';
+  type: "view" | "download";
   amount: number;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   accessExpires?: string;
   createdAt: string;
 }
 
 export interface JwtPayload {
   userId: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: 'student' | 'admin';
+  role: "student" | "admin";
+  isverify: boolean;
   iat: number;
   exp: number;
 }

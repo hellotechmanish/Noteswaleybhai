@@ -31,21 +31,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user data
+    // Get user data verify
     const user = await User.findOneAndUpdate(
       { email: email.toLowerCase() },
       { $set: { isverify: true } },
       { new: true }
     );
-
-    //   const user = await User.findOne({ email: email.toLowerCase() }
-    // {$set
-    //   {
-    //     isverify:true
-    //   }
-    // }
-    // )
-
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -56,8 +47,11 @@ export async function POST(request: NextRequest) {
     // Generate JWT token
     const token = await signToken({
       userId: user._id.toString(),
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
+      isverify: user.isverify,
     });
 
     const response = NextResponse.json(

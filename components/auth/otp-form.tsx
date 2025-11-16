@@ -1,71 +1,77 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function OtpForm() {
-  const [otp, setOtp] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get('email') || ''
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
 
   useEffect(() => {
-    if (timeLeft <= 0) return
+    if (timeLeft <= 0) return;
 
     const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1)
-    }, 1000)
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
 
-    return () => clearTimeout(timer)
-  }, [timeLeft])
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
 
     if (!otp || otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP')
-      return
+      setError("Please enter a valid 6-digit OTP");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'OTP verification failed')
-        return
+        setError(data.error || "OTP verification failed");
+        return;
       }
 
-      setSuccess(true)
+      setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
+        router.push("/");
+      }, 1000);
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError("An error occurred. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
 
   return (
     <Card className="w-full">
@@ -98,7 +104,9 @@ export function OtpForm() {
             <Input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               placeholder="000000"
               maxLength={6}
               disabled={loading}
@@ -107,23 +115,36 @@ export function OtpForm() {
           </div>
 
           <div className="text-center text-sm">
-            <p className={timeLeft < 60 ? 'text-destructive font-medium' : 'text-muted-foreground'}>
-              Time remaining: {minutes}:{seconds.toString().padStart(2, '0')}
+            <p
+              className={
+                timeLeft < 60
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
+              }
+            >
+              Time remaining: {minutes}:{seconds.toString().padStart(2, "0")}
             </p>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading || timeLeft <= 0}>
-            {loading ? 'Verifying...' : 'Verify OTP'}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || timeLeft <= 0}
+          >
+            {loading ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            Didn't receive the OTP?{' '}
-            <button type="button" className="text-primary hover:underline font-medium">
+            Didn't receive the OTP?{" "}
+            <button
+              type="button"
+              className="text-primary hover:underline font-medium"
+            >
               Resend
             </button>
           </p>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

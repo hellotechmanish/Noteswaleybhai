@@ -41,8 +41,11 @@ export async function POST(request: NextRequest) {
 
     const token = await signToken({
       userId: user._id.toString(),
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
+      isverify: user.isverify,
     });
 
     console.log("token", token);
@@ -57,6 +60,7 @@ export async function POST(request: NextRequest) {
           lastName: user.lastName,
           email: user.email,
           role: user.role,
+          isverify: user.isverify,
         },
       },
       { status: 200 }
