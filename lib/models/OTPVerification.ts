@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOTPVerification extends Document {
   email: string;
@@ -21,10 +21,11 @@ const OTPVerificationSchema = new Schema<IOTPVerification>(
     expiresAt: {
       type: Date,
       required: true,
-      index: { expires: 0 }, // Auto-delete expired OTPs
+      // index: { expires: 0 }, // Auto-delete expired OTPs
     },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.OTPVerification || mongoose.model<IOTPVerification>('OTPVerification', OTPVerificationSchema);
+export default mongoose.models.OTPVerification ||
+  mongoose.model<IOTPVerification>("OTPVerification", OTPVerificationSchema);

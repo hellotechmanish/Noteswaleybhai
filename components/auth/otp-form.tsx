@@ -61,7 +61,7 @@ export function OtpForm() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/");
+        router.push("/student");
       }, 1000);
     } catch (err) {
       setError("An error occurred. Please try again.");
