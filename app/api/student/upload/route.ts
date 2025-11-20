@@ -1,26 +1,39 @@
+export const runtime = "nodejs"; // Important: Enables Buffer & Node APIs
+
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Note from "@/lib/models/Note";
 import { createClient } from "@supabase/supabase-js";
 
-// Supabase server client
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: false,
+    },
+  }
 );
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get("authToken")?.value;
+
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const payload = await verifyToken(token);
+
     if (!payload)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     const formData = await request.formData();
+
+    // Debug print
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
     const university = formData.get("university") as string;
     const course = formData.get("course") as string;
@@ -49,13 +62,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
 
-    // Convert file for Supabase Upload
+    // Convert file buffer
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileName = `${Date.now()}-${file.name}`;
     const filePath = `${payload.userId}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("notes-pdfs")
+      .from("noteswaleybhai")
       .upload(filePath, buffer, {
         contentType: "application/pdf",
       });
@@ -63,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (uploadError) {
       console.error("Supabase Upload Error:", uploadError);
       return NextResponse.json(
-        { error: "File upload failed" },
+        { error: "Failed to upload the PDF" },
         { status: 500 }
       );
     }
@@ -95,7 +108,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload Error:", error);
     return NextResponse.json(
-      { error: "Failed to upload notes" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
