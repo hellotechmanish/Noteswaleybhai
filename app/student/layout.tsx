@@ -1,27 +1,39 @@
+"use client";
+
 import StudentHeader from "@/components/student/StudentHeader";
 import StudentSidebar from "@/components/student/StudentSidebar";
-import { getTokenPayload } from "@/lib/getTokenPayload";
-import { redirect } from "next/navigation";
+import { useState } from "react";
 
-export default async function StudentLayout({
+export default function StudentLayoutClient({
   children,
+  user,
 }: {
   children: React.ReactNode;
+  user: any;
 }) {
-  const payload = await getTokenPayload();
-
-  if (!payload || payload.role !== "student") {
-    redirect("/login");
-  }
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
-      {/* FIXED SIDEBAR */}
-      <StudentSidebar />
+    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900 transition-all">
+      {/* Sidebar */}
+      <StudentSidebar
+        isExpanded={isExpanded}
+        isPinned={isPinned}
+        setIsExpanded={setIsExpanded}
+        setIsPinned={setIsPinned}
+      />
 
-      {/* Main content area with padding-left equal to sidebar width */}
-      <div className="flex-1 flex flex-col ml-20 md:ml-64 transition-all">
-        <StudentHeader user={payload} />
+      {/* MAIN CONTENT */}
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 
+          ${isExpanded || isPinned ? "ml-64" : "ml-20"}
+        `}
+      >
+        {/* Header */}
+        <StudentHeader user={user} />
+
+        {/* Page content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

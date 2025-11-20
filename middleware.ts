@@ -6,15 +6,16 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("authToken")?.value;
   const path = request.nextUrl.pathname;
 
-  // Public pages
-  const PUBLIC = ["/login", "/signup", "/verify-otp"];
+  // Public pages allowed WITHOUT token
+  const PUBLIC = ["/", "/login", "/signup"];
+  const isPublic = PUBLIC.includes(path);
 
   // --------------------------
-  // 1️⃣ Token NAHI hai → Login bhejo
+  // 1️⃣ No token → Only PUBLIC pages allowed
   // --------------------------
   if (!token) {
-    if (!PUBLIC.includes(path)) {
-      return NextResponse.redirect(new URL("/login", request.url));
+    if (!isPublic) {
+      return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }
@@ -22,57 +23,40 @@ export async function middleware(request: NextRequest) {
   // --------------------------
   // 2️⃣ Token HAI → JWT Verify
   // --------------------------
-  let payload;
+  let payload: any;
   try {
     payload = await verifyToken(token);
   } catch {
-    const res = NextResponse.redirect(new URL("/login", request.url));
+    const res = NextResponse.redirect(new URL("/", request.url));
     res.cookies.set("authToken", "", { maxAge: 0 });
     return res;
   }
 
-  const isverify = payload?.isverify;
   const role = payload?.role;
 
   // --------------------------
-  // 3️⃣ USER IS NOT VERIFIED → Force to /verify-otp
+  // 3️⃣ Token user visiting / or /login or /signup → redirect to dashboard
   // --------------------------
-  if (!isverify) {
-    // Only allow verify-otp page
-    if (!path.startsWith("/verify-otp")) {
-      return NextResponse.redirect(
-        new URL(`/verify-otp?email=${payload?.email}`, request.url)
-      );
-    }
-    return NextResponse.next();
+  if (isPublic) {
+    return NextResponse.redirect(
+      new URL(role === "admin" ? "/admin/dashboard" : "/student", request.url)
+    );
   }
 
   // --------------------------
-  // 4️⃣ Verified user visiting login/signup → redirect
-  // --------------------------
-  if (PUBLIC.includes(path)) {
-    if (role === "admin")
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    return NextResponse.redirect(new URL("/student", request.url));
-  }
-
-  // --------------------------
-  // 5️⃣ Admin protection
+  // 4️⃣ Admin protection
   // --------------------------
   if (path.startsWith("/admin") && role !== "admin") {
     return NextResponse.redirect(new URL("/student", request.url));
   }
 
   // --------------------------
-  // 6️⃣ Student protection
+  // 5️⃣ Student protection
   // --------------------------
   if (path.startsWith("/student") && role !== "student") {
     return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }
 
-  // --------------------------
-  // Everything OK
-  // --------------------------
   return NextResponse.next();
 }
 

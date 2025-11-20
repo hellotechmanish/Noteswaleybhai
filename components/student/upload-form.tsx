@@ -1,266 +1,410 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+"use client";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { AlertCircle, CheckCircle2, UploadIcon } from 'lucide-react'
-import type { University, Course, Subject } from '@/lib/types'
+} from "@/components/ui/select";
+import { AlertCircle, CheckCircle2, Upload } from "lucide-react";
+
+export const COURSE_STRUCTURE = {
+  "B.Tech": {
+    years: 4,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+      "4": ["Semester 7", "Semester 8"],
+    },
+  },
+  "B.Sc": {
+    years: 3,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+    },
+  },
+  "B.Com": {
+    years: 3,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+    },
+  },
+  BA: {
+    years: 3,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+    },
+  },
+  BCA: {
+    years: 3,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+    },
+  },
+  BBA: {
+    years: 3,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+      "3": ["Semester 5", "Semester 6"],
+    },
+  },
+  MCA: {
+    years: 2,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+    },
+  },
+  MBA: {
+    years: 2,
+    semesters: {
+      "1": ["Semester 1", "Semester 2"],
+      "2": ["Semester 3", "Semester 4"],
+    },
+  },
+};
 
 export function UploadForm() {
-  const [universities, setUniversities] = useState<University[]>([])
-  const [courses, setCourses] = useState<Course[]>([])
-  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [universities, setUniversities] = useState<any[]>([]);
+  const [courses, setCourses] = useState<string[]>([]);
+  const [selectedUni, setSelectedUni] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState<
+    keyof typeof COURSE_STRUCTURE | ""
+  >("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedSem, setSelectedSem] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const [selectedUni, setSelectedUni] = useState('')
-  const [selectedCourse, setSelectedCourse] = useState('')
-  const [selectedSubject, setSelectedSubject] = useState('')
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-
+  // Load universities
   useEffect(() => {
-    fetchUniversities()
-  }, [])
+    async function load() {
+      try {
+        const res = await fetch(
+          "http://universities.hipolabs.com/search?country=India"
+        );
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        setUniversities(data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load universities");
+      }
+    }
+    load();
+  }, []);
 
+  // Fetch Course list from Scraper API
+  async function fetchCourses(website: string) {
+    try {
+      //  TEMPORARILY DISABLED API CALL
+      // const res = await fetch(
+      //   `/api/student/upload/university-courses?url=${encodeURIComponent(website)}`
+      // );
+      // if (!res.ok) throw new Error("Failed to fetch courses");
+
+      // const data = await res.json();
+      // if (data.courses && Array.isArray(data.courses)) {
+      //   setCourses(data.courses);
+      //   return;
+      // }
+
+      // ✔ ALWAYS USE DEFAULT COURSE LIST (COURSE_STRUCTURE)
+      const fallbackCourses: string[] = Object.keys(COURSE_STRUCTURE);
+
+      setCourses(fallbackCourses);
+      setError(""); // remove error message
+    } catch (err) {
+      console.error(err);
+
+      // Still fallback on error
+      const fallbackCourses: string[] = Object.keys(COURSE_STRUCTURE);
+      setCourses(fallbackCourses);
+      setError("Showing default course list.");
+    }
+  }
+
+  // When university changes → fetch course list
   useEffect(() => {
     if (selectedUni) {
-      fetchCourses(selectedUni)
+      fetchCourses(selectedUni);
+    } else {
+      setCourses([]);
+      setSelectedCourse("");
     }
-  }, [selectedUni])
+    // Reset dependent fields
+    setSelectedYear("");
+    setSelectedSem("");
+  }, [selectedUni]);
 
+  // Reset year and semester when course changes
   useEffect(() => {
-    if (selectedCourse) {
-      fetchSubjects(selectedCourse)
-    }
-  }, [selectedCourse])
+    setSelectedYear("");
+    setSelectedSem("");
+  }, [selectedCourse]);
 
-  async function fetchUniversities() {
-    try {
-      const response = await fetch('/api/universities')
-      const data = await response.json()
-      setUniversities(data)
-    } catch (err) {
-      setError('Failed to load universities')
-    }
-  }
+  // Reset semester when year changes
+  useEffect(() => {
+    setSelectedSem("");
+  }, [selectedYear]);
 
-  async function fetchCourses(universityId: string) {
-    try {
-      const response = await fetch(`/api/courses?universityId=${universityId}`)
-      const data = await response.json()
-      setCourses(data)
-      setSelectedCourse('')
-    } catch (err) {
-      setError('Failed to load courses')
-    }
-  }
+  // Dynamic Years (Based on Course)
+  const YEARS =
+    selectedCourse && COURSE_STRUCTURE[selectedCourse]
+      ? Array.from(
+          { length: COURSE_STRUCTURE[selectedCourse].years },
+          (_, i) => `${i + 1}`
+        )
+      : [];
 
-  async function fetchSubjects(courseId: string) {
-    try {
-      const response = await fetch(`/api/subjects?courseId=${courseId}`)
-      const data = await response.json()
-      setSubjects(data)
-      setSelectedSubject('')
-    } catch (err) {
-      setError('Failed to load subjects')
-    }
-  }
+  // Dynamic Semesters (Based on Year)
+  const SEMS =
+    selectedCourse && selectedYear && COURSE_STRUCTURE[selectedCourse]
+      ? COURSE_STRUCTURE[selectedCourse].semesters[
+          selectedYear as keyof (typeof COURSE_STRUCTURE)[keyof typeof COURSE_STRUCTURE]["semesters"]
+        ] || []
+      : [];
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setSuccess(false)
+  // Submit Handler
+  async function handleSubmit() {
+    setError("");
+    setSuccess(false);
 
     // Validation
-    if (!selectedSubject || !title || !file) {
-      setError('All fields are required')
-      return
+    if (
+      !selectedUni ||
+      !selectedCourse ||
+      !selectedYear ||
+      !selectedSem ||
+      !title ||
+      !file
+    ) {
+      setError("Please fill all fields.");
+      return;
     }
 
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      setError('File size must be less than 5MB')
-      return
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Max 5MB is allowed.");
+      return;
     }
 
-    if (file.type !== 'application/pdf') {
-      setError('Only PDF files are allowed')
-      return
+    if (file.type !== "application/pdf") {
+      setError("Only PDF files are allowed.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const formData = new FormData()
-      formData.append('subjectId', selectedSubject)
-      formData.append('title', title)
-      formData.append('description', description)
-      formData.append('file', file)
+      const formData = new FormData();
+      formData.append("university", selectedUni);
+      formData.append("course", selectedCourse);
+      formData.append("year", selectedYear);
+      formData.append("semester", selectedSem);
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("file", file);
 
-      const response = await fetch('/api/student/upload', {
-        method: 'POST',
+      const response = await fetch("/api/student/upload", {
+        method: "POST",
         body: formData,
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Upload failed')
-        return
+        setError(data.error || "Upload failed.");
+        return;
       }
 
-      setSuccess(true)
-      // Reset form
-      setTitle('')
-      setDescription('')
-      setFile(null)
+      setSuccess(true);
       setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 2000)
+        window.location.href = "/student";
+      }, 1500);
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      console.error(err);
+      setError("Upload failed.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Upload Your Notes</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="h-5 w-5" />
+          Upload Notes
+        </CardTitle>
         <CardDescription>
-          Share your notes with other students and earn money. Max 5MB PDF file.
+          Select University → Course → Year → Semester
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {success && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Notes uploaded successfully! Redirecting to dashboard...
-              </AlertDescription>
-            </Alert>
-          )}
+        {success && (
+          <Alert className="mb-4 bg-green-50 text-green-900 border-green-200">
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertDescription>Upload Successful 🎉</AlertDescription>
+          </Alert>
+        )}
 
-          <div>
-            <label className="block text-sm font-medium mb-1">University</label>
-            <Select value={selectedUni} onValueChange={setSelectedUni} disabled={loading}>
+        <div className="space-y-4">
+          {/* University */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">University</label>
+            <Select value={selectedUni} onValueChange={setSelectedUni}>
               <SelectTrigger>
-                <SelectValue placeholder="Select university" />
+                <SelectValue placeholder="Select University" />
               </SelectTrigger>
               <SelectContent>
-                {universities.map((uni) => (
-                  <SelectItem key={uni.id} value={uni.id}>
-                    {uni.name}
+                {universities.map((u: any) => (
+                  <SelectItem key={u.name} value={u.web_pages?.[0] || u.name}>
+                    {u.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Course</label>
-            <Select value={selectedCourse} onValueChange={setSelectedCourse} disabled={!selectedUni || loading}>
+          {/* Course */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Course</label>
+            <Select
+              value={selectedCourse}
+              onValueChange={(v) =>
+                setSelectedCourse(v as keyof typeof COURSE_STRUCTURE)
+              }
+              disabled={!courses.length}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select course" />
+                <SelectValue placeholder="Select Course" />
               </SelectTrigger>
               <SelectContent>
-                {courses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.name}
+                {courses.map((c: string) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Subject</label>
-            <Select value={selectedSubject} onValueChange={setSelectedSubject} disabled={!selectedCourse || loading}>
+          {/* Year */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Year</label>
+            <Select
+              value={selectedYear}
+              onValueChange={setSelectedYear}
+              disabled={!selectedCourse}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select subject" />
+                <SelectValue placeholder="Select Year" />
               </SelectTrigger>
               <SelectContent>
-                {subjects.map((subject) => (
-                  <SelectItem key={subject.id} value={subject.id}>
-                    {subject.name} (Sem {subject.semester})
+                {YEARS.map((y) => (
+                  <SelectItem key={y} value={y}>
+                    Year {y}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
+          {/* Semester */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Semester</label>
+            <Select
+              value={selectedSem}
+              onValueChange={setSelectedSem}
+              disabled={!selectedYear}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Semester" />
+              </SelectTrigger>
+              <SelectContent>
+                {SEMS.map((s: string) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Title */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Title</label>
             <Input
-              type="text"
+              placeholder="e.g., Data Structures Notes"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Chapter 3 - Calculus Notes"
-              disabled={loading}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Description (Optional)</label>
-            <textarea
+          {/* Description */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Description (Optional)
+            </label>
+            <Input
+              placeholder="Brief description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add details about your notes..."
-              className="w-full px-3 py-2 border rounded-md text-sm"
-              rows={3}
-              disabled={loading}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">PDF File (Max 5MB)</label>
-            <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition">
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                disabled={loading}
-                className="hidden"
-                id="file-input"
-              />
-              <label htmlFor="file-input" className="cursor-pointer">
-                <UploadIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm font-medium">Click to upload or drag and drop</p>
-                <p className="text-xs text-muted-foreground">PDF (max 5MB)</p>
-                {file && (
-                  <p className="text-sm text-green-600 mt-2 font-medium">{file.name}</p>
-                )}
-              </label>
-            </div>
+          {/* File */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Upload PDF</label>
+            <Input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+            {file && (
+              <p className="text-xs text-gray-600">
+                Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+              </p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Uploading...' : 'Upload Notes'}
+          <Button onClick={handleSubmit} className="w-full" disabled={loading}>
+            {loading ? "Uploading..." : "Upload Notes"}
           </Button>
-        </form>
+        </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -2,23 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
   Home,
   Upload,
   FileText,
   User,
-  ChevronLeft,
-  BookOpen,
-  Settings,
   CreditCard,
+  Settings,
+  ChevronLeft,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 
-export default function StudentSidebar() {
+export default function StudentSidebar({
+  isExpanded,
+  isPinned,
+  setIsExpanded,
+  setIsPinned,
+}: {
+  isExpanded: boolean;
+  isPinned: boolean;
+  setIsExpanded: (v: boolean) => void;
+  setIsPinned: (v: boolean) => void;
+}) {
   const path = usePathname();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
 
   const menuItems = [
     { href: "/student", icon: Home, label: "Dashboard" },
@@ -30,28 +37,16 @@ export default function StudentSidebar() {
   ];
 
   const handleMouseEnter = () => {
-    if (!isPinned) {
-      setIsExpanded(true);
-    }
+    if (!isPinned) setIsExpanded(true);
   };
 
   const handleMouseLeave = () => {
-    if (!isPinned) {
-      setIsExpanded(false);
-    }
-  };
-
-  const handleMenuClick = () => {
-    if (!isPinned) {
-      setIsExpanded(false);
-    }
+    if (!isPinned) setIsExpanded(false);
   };
 
   const togglePin = () => {
     setIsPinned(!isPinned);
-    if (!isPinned) {
-      setIsExpanded(true);
-    }
+    if (!isPinned) setIsExpanded(true);
   };
 
   const isActive = (href: string) => path === href;
@@ -60,65 +55,84 @@ export default function StudentSidebar() {
     <aside
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-white-900 to-whit-800 dark:from-gray-900 dark:to-gray-900 text-white shadow-2xl transition-all duration-300 ease-in-out z-50 ${
-        isExpanded || isPinned ? "w-64" : "w-20"
-      }`}
+      className={`
+        fixed left-0 top-0 h-screen z-50 
+        bg-gradient-to-b from-gray-50 to-gray-200
+        dark:from-gray-900 dark:to-gray-800
+        shadow-xl border-r border-gray-300 dark:border-gray-700
+        transition-all duration-300
+        ${isExpanded || isPinned ? "w-64" : "w-20"}
+      `}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700 dark:border-gray-800">
+      {/* TOP BRAND */}
+      <div className="p-4 border-b border-gray-300 dark:border-gray-700">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg group-hover:bg-blue-500 dark:group-hover:bg-blue-400 transition-colors flex-shrink-0">
-            <BookOpen className="w-6 h-6" />
+          <div className="p-2 bg-blue-600 dark:bg-blue-500 rounded-xl flex items-center justify-center">
+            <BookOpen className="w-6 h-6 text-white" />
           </div>
-          <div
-            className={`overflow-hidden transition-all duration-300 ${
-              isExpanded || isPinned ? "opacity-100 w-auto" : "opacity-0 w-0"
-            }`}
+
+          <span
+            className={`text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-300 overflow-hidden
+              ${isExpanded || isPinned ? "opacity-100 w-auto" : "opacity-0 w-0"}
+            `}
           >
-            <h1 className="text-xl font-bold whitespace-nowrap">
-              NotesWaleyBhai
-            </h1>
-          </div>
+            NotesWaleyBhai
+          </span>
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto h-[calc(100vh-180px)]">
+      {/* NAVIGATION */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-2 overflow-hidden">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
 
           return (
-            <div key={item.href} className="relative">
+            <div key={item.href} className="relative group">
               <Link
                 href={item.href}
-                onClick={handleMenuClick}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                  active
-                    ? "bg-blue-600 dark:bg-blue-500 text-white shadow-lg"
-                    : "text-gray-300 dark:text-gray-400 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white"
-                }`}
-              >
-                <Icon
-                  className={`w-5 h-5 flex-shrink-0 ${
+                className={`flex items-center gap-3 rounded-lg transition-all duration-200
+                  ${
                     active
-                      ? "text-white"
-                      : "text-gray-400 group-hover:text-white"
-                  }`}
-                />
+                      ? "bg-blue-600 dark:bg-blue-500 text-white"
+                      : "hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }
+                `}
+              >
+                {/* ICON BOX */}
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-lg transition-all
+                    ${
+                      active
+                        ? "text-white"
+                        : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                </div>
+
+                {/* LABEL */}
                 <span
-                  className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                    isExpanded || isPinned
-                      ? "opacity-100 w-auto"
-                      : "opacity-0 w-0 overflow-hidden"
-                  }`}
+                  className={`text-sm font-medium whitespace-nowrap transition-all overflow-hidden
+                    ${
+                      isExpanded || isPinned
+                        ? "opacity-100 w-auto"
+                        : "opacity-0 w-0"
+                    }
+                  `}
                 >
                   {item.label}
                 </span>
               </Link>
-              {/* Tooltip for collapsed state */}
+
+              {/* TOOLTIP */}
               {!isExpanded && !isPinned && (
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-900 dark:bg-gray-950 text-white px-3 py-2 rounded-md text-sm opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-lg whitespace-nowrap z-50 border border-gray-700 dark:border-gray-800">
+                <div
+                  className="absolute left-full top-1/2 -translate-y-1/2 ml-2
+                  bg-gray-900 text-white rounded-md px-3 py-1 text-sm 
+                  opacity-0 group-hover:opacity-100 transition shadow-lg whitespace-nowrap"
+                >
                   {item.label}
                 </div>
               )}
@@ -127,45 +141,49 @@ export default function StudentSidebar() {
         })}
       </nav>
 
-      {/* Footer Controls */}
-      <div className="border-t border-gray-700 dark:border-gray-800 p-4 space-y-2">
-        {/* Pin/Unpin Button */}
+      {/* FOOTER */}
+      <div className="p-4 border-t border-gray-300 dark:border-gray-700 space-y-2">
+        {/* PIN TOGGLE */}
         <button
           onClick={togglePin}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-            isPinned
-              ? "bg-blue-600 dark:bg-blue-500 text-white"
-              : "text-gray-300 dark:text-gray-400 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white"
-          }`}
+          className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all
+            ${
+              isPinned
+                ? "bg-blue-600 dark:bg-blue-500 text-white"
+                : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            }
+          `}
         >
           <ChevronLeft
-            className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
+            className={`w-5 h-5 transition-transform ${
               isPinned ? "rotate-180" : ""
             }`}
           />
+
           <span
-            className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-              isExpanded || isPinned
-                ? "opacity-100 w-auto"
-                : "opacity-0 w-0 overflow-hidden"
+            className={`text-sm whitespace-nowrap transition-all ${
+              isExpanded || isPinned ? "opacity-100" : "opacity-0 w-0"
             }`}
           >
             {isPinned ? "Unpin" : "Pin"}
           </span>
         </button>
 
-        {/* Logout */}
+        {/* LOGOUT */}
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 dark:text-gray-400 hover:bg-red-600 dark:hover:bg-red-700 hover:text-white transition-all duration-200"
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-lg 
+              hover:bg-red-600 dark:hover:bg-red-700 hover:text-white
+              text-gray-700 dark:text-gray-300 transition-all"
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <div className="w-10 h-10 flex items-center justify-center">
+              <LogOut className="w-5 h-5" />
+            </div>
+
             <span
-              className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                isExpanded || isPinned
-                  ? "opacity-100 w-auto"
-                  : "opacity-0 w-0 overflow-hidden"
+              className={`text-sm transition-all ${
+                isExpanded || isPinned ? "opacity-100" : "opacity-0 w-0"
               }`}
             >
               Logout
