@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Award, ArrowRight } from "lucide-react";
-import { getTokenPayload } from "@/lib/getTokenPayload";
-import ThemeToggle from "@/components/ThemeToggle";
+import { getTokenPayload } from "../lib/getTokenPayload";
+import ThemeToggle from "../components/ThemeToggle";
+import { Button } from "../components/ui/button";
 
 export default async function HomePage() {
   const payload = await getTokenPayload();

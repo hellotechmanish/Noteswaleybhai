@@ -101,7 +101,6 @@ export function UploadForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // Load universities
   useEffect(() => {
     async function load() {
       try {
@@ -119,61 +118,28 @@ export function UploadForm() {
     load();
   }, []);
 
-  // Fetch Course list from Scraper API
-  async function fetchCourses(website: string) {
-    try {
-      //  TEMPORARILY DISABLED API CALL
-      // const res = await fetch(
-      //   `/api/student/upload/university-courses?url=${encodeURIComponent(website)}`
-      // );
-      // if (!res.ok) throw new Error("Failed to fetch courses");
-
-      // const data = await res.json();
-      // if (data.courses && Array.isArray(data.courses)) {
-      //   setCourses(data.courses);
-      //   return;
-      // }
-
-      // ✔ ALWAYS USE DEFAULT COURSE LIST (COURSE_STRUCTURE)
-      const fallbackCourses: string[] = Object.keys(COURSE_STRUCTURE);
-
-      setCourses(fallbackCourses);
-      setError(""); // remove error message
-    } catch (err) {
-      console.error(err);
-
-      // Still fallback on error
-      const fallbackCourses: string[] = Object.keys(COURSE_STRUCTURE);
-      setCourses(fallbackCourses);
-      setError("Showing default course list.");
-    }
+  async function fetchCourses() {
+    const fallbackCourses = Object.keys(COURSE_STRUCTURE);
+    setCourses(fallbackCourses);
+    setError("");
   }
 
-  // When university changes → fetch course list
   useEffect(() => {
-    if (selectedUni) {
-      fetchCourses(selectedUni);
-    } else {
-      setCourses([]);
-      setSelectedCourse("");
-    }
-    // Reset dependent fields
+    if (selectedUni) fetchCourses();
+    setSelectedCourse("");
     setSelectedYear("");
     setSelectedSem("");
   }, [selectedUni]);
 
-  // Reset year and semester when course changes
   useEffect(() => {
     setSelectedYear("");
     setSelectedSem("");
   }, [selectedCourse]);
 
-  // Reset semester when year changes
   useEffect(() => {
     setSelectedSem("");
   }, [selectedYear]);
 
-  // Dynamic Years (Based on Course)
   const YEARS =
     selectedCourse && COURSE_STRUCTURE[selectedCourse]
       ? Array.from(
@@ -182,7 +148,6 @@ export function UploadForm() {
         )
       : [];
 
-  // Dynamic Semesters (Based on Year)
   const SEMS =
     selectedCourse && selectedYear && COURSE_STRUCTURE[selectedCourse]
       ? COURSE_STRUCTURE[selectedCourse].semesters[
@@ -190,12 +155,10 @@ export function UploadForm() {
         ] || []
       : [];
 
-  // Submit Handler
   async function handleSubmit() {
     setError("");
     setSuccess(false);
 
-    // Validation
     if (
       !selectedUni ||
       !selectedCourse ||
@@ -230,14 +193,14 @@ export function UploadForm() {
       formData.append("description", description);
       formData.append("file", file);
 
-      const response = await fetch("/api/student/upload", {
+      const res = await fetch("/api/student/upload", {
         method: "POST",
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
+      if (!res.ok) {
         setError(data.error || "Upload failed.");
         return;
       }
@@ -246,8 +209,7 @@ export function UploadForm() {
       setTimeout(() => {
         window.location.href = "/student";
       }, 1500);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
       setError("Upload failed.");
     } finally {
       setLoading(false);
@@ -255,16 +217,17 @@ export function UploadForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 dark:border-gray-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
           <Upload className="h-5 w-5" />
           Upload Notes
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-600 dark:text-gray-400">
           Select University → Course → Year → Semester
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         {error && (
           <Alert variant="destructive" className="mb-4">
@@ -274,7 +237,7 @@ export function UploadForm() {
         )}
 
         {success && (
-          <Alert className="mb-4 bg-green-50 text-green-900 border-green-200">
+          <Alert className="mb-4 bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200 border-green-200 dark:border-green-800">
             <CheckCircle2 className="h-4 w-4" />
             <AlertDescription>Upload Successful 🎉</AlertDescription>
           </Alert>
@@ -283,14 +246,20 @@ export function UploadForm() {
         <div className="space-y-4">
           {/* University */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">University</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              University
+            </label>
             <Select value={selectedUni} onValueChange={setSelectedUni}>
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
                 <SelectValue placeholder="Select University" />
               </SelectTrigger>
-              <SelectContent>
-                {universities.map((u: any) => (
-                  <SelectItem key={u.name} value={u.web_pages?.[0] || u.name}>
+              <SelectContent className="dark:bg-gray-800 dark:text-gray-200">
+                {universities.map((u) => (
+                  <SelectItem
+                    key={u.name}
+                    value={u.web_pages?.[0] || u.name}
+                    className="dark:text-gray-200"
+                  >
                     {u.name}
                   </SelectItem>
                 ))}
@@ -300,7 +269,9 @@ export function UploadForm() {
 
           {/* Course */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Course</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Course
+            </label>
             <Select
               value={selectedCourse}
               onValueChange={(v) =>
@@ -308,11 +279,11 @@ export function UploadForm() {
               }
               disabled={!courses.length}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
                 <SelectValue placeholder="Select Course" />
               </SelectTrigger>
-              <SelectContent>
-                {courses.map((c: string) => (
+              <SelectContent className="dark:bg-gray-800 dark:text-gray-200">
+                {courses.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
@@ -323,16 +294,18 @@ export function UploadForm() {
 
           {/* Year */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Year</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Year
+            </label>
             <Select
               value={selectedYear}
               onValueChange={setSelectedYear}
               disabled={!selectedCourse}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
                 <SelectValue placeholder="Select Year" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-gray-800 dark:text-gray-200">
                 {YEARS.map((y) => (
                   <SelectItem key={y} value={y}>
                     Year {y}
@@ -344,17 +317,19 @@ export function UploadForm() {
 
           {/* Semester */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Semester</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Semester
+            </label>
             <Select
               value={selectedSem}
               onValueChange={setSelectedSem}
               disabled={!selectedYear}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
                 <SelectValue placeholder="Select Semester" />
               </SelectTrigger>
-              <SelectContent>
-                {SEMS.map((s: string) => (
+              <SelectContent className="dark:bg-gray-800 dark:text-gray-200">
+                {SEMS.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>
@@ -365,36 +340,43 @@ export function UploadForm() {
 
           {/* Title */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Title</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Title
+            </label>
             <Input
               placeholder="e.g., Data Structures Notes"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
               Description (Optional)
             </label>
             <Input
               placeholder="Brief description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
             />
           </div>
 
           {/* File */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Upload PDF</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Upload PDF
+            </label>
             <Input
               type="file"
               accept="application/pdf"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
             />
             {file && (
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
               </p>
             )}

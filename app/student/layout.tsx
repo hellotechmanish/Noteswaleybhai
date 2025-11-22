@@ -1,9 +1,8 @@
 "use client";
 
-import StudentHeader from "@/components/student/StudentHeader";
-import StudentSidebar from "@/components/student/StudentSidebar";
 import { useState } from "react";
-
+import StudentSidebar from "../../components/student/StudentSidebar";
+import StudentHeader from "../../components/student/StudentHeader";
 export default function StudentLayoutClient({
   children,
   user,

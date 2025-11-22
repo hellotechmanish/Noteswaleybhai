@@ -1,39 +1,28 @@
-export const runtime = "nodejs"; // Important: Enables Buffer & Node APIs
+export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
-import dbConnect from "@/lib/mongodb";
 import Note from "@/lib/models/Note";
 import { createClient } from "@supabase/supabase-js";
+import { connectionToDb } from "@/lib/mongodb";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      persistSession: false,
-    },
-  }
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } }
 );
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get("authToken")?.value;
-
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const payload = await verifyToken(token);
-
     if (!payload)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     const formData = await request.formData();
-
-    // Debug print
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
 
     const university = formData.get("university") as string;
     const course = formData.get("course") as string;
@@ -62,47 +51,53 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
 
-    // Convert file buffer
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileName = `${Date.now()}-${file.name}`;
     const filePath = `${payload.userId}/${fileName}`;
 
+    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from("noteswaleybhai")
-      .upload(filePath, buffer, {
-        contentType: "application/pdf",
-      });
+      .upload(filePath, buffer, { contentType: "application/pdf" });
 
     if (uploadError) {
-      console.error("Supabase Upload Error:", uploadError);
-      return NextResponse.json(
-        { error: "Failed to upload the PDF" },
-        { status: 500 }
-      );
+      console.error("Upload Error:", uploadError);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    await dbConnect();
+    // Public URL
+    const { data: publicUrlData } = supabase.storage
+      .from("noteswaleybhai")
+      .getPublicUrl(filePath);
+
+    const fileUrl = publicUrlData.publicUrl;
+
+    // Signed URL (1 week)
+    const { data: signedUrlData } = await supabase.storage
+      .from("noteswaleybhai")
+      .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+
+    await connectionToDb();
 
     const note = await Note.create({
-      userId: payload.userId,
+      title,
+      description,
+
       university,
       course,
       year,
       semester,
-      title,
-      description,
-      pdfPath: filePath,
-      fileSize: file.size,
+
+      uploadedBy: payload.userId,
+
+      fileUrl,
+      supabaseSignedUrl: signedUrlData?.signedUrl,
+
       status: "pending",
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
     return NextResponse.json(
-      {
-        message: "Notes uploaded successfully. Awaiting admin approval.",
-        note,
-      },
+      { message: "Uploaded successfully!", note },
       { status: 201 }
     );
   } catch (error) {

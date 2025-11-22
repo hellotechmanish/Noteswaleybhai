@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+} from "../ui/card";
+import { Alert, AlertDescription } from "../ui/alert";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");

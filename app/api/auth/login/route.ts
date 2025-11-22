@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import { connectionToDb } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import { signToken } from "@/lib/jwt";
 
@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    console.log("credesiat", email, password);
+    console.log("credetial : ", email, password);
 
     if (!email || !password) {
       return NextResponse.json(
@@ -16,16 +16,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    await connectionToDb();
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    console.log("user", user);
+    console.log("user>>>>>", user);
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "user not found" }, { status: 404 });
     }
 
     // Compare password using schema method
@@ -33,10 +30,7 @@ export async function POST(request: NextRequest) {
     console.log("isPasswordValid", isPasswordValid);
 
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Invalid  password" }, { status: 401 });
     }
 
     const token = await signToken({

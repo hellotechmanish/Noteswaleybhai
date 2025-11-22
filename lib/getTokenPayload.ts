@@ -1,6 +1,6 @@
 // lib/getTokenPayload.ts
 import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/jwt";
+import { verifyToken } from "./jwt";
 
 export async function getTokenPayload() {
   const cookieStore = await cookies();

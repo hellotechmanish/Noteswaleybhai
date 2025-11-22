@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import OTPVerification from "@/lib/models/OTPVerification";
 import { signToken } from "@/lib/jwt";
+import { connectionToDb } from "@/lib/mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    await connectionToDb();
 
     // Find valid OTP
     const otpRecord = await OTPVerification.findOne({
