@@ -30,6 +30,7 @@ export async function GET() {
     // });
     console.log("userData notes", userData);
 
+    
     return NextResponse.json({
       success: true,
       data: userData?.notes || [],
