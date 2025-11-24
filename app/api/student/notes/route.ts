@@ -28,9 +28,9 @@ export async function GET() {
     //     "title university course year semester status views downloads earnedAmount createdAt uploadedBy",
     //   options: { sort: { createdAt: -1 } },
     // });
-    console.log("userData notes", userData);
+    // console.log("userData notes", userData);
 
-    
+
     return NextResponse.json({
       success: true,
       data: userData?.notes || [],
