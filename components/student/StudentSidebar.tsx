@@ -31,6 +31,7 @@ export default function StudentSidebar({
     { href: "/student", icon: Home, label: "Dashboard" },
     { href: "/student/upload", icon: Upload, label: "Upload Notes" },
     { href: "/student/notes", icon: FileText, label: "My Notes" },
+    { href: "/student/todo", icon: User, label: "Todo" },
     { href: "/student/profile", icon: User, label: "Profile" },
     // { href: "/student/earnings", icon: CreditCard, label: "Earnings" },
     // { href: "/student/settings", icon: Settings, label: "Settings" },

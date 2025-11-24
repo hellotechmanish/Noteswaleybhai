@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectionToDb } from "@/lib/mongodb";
-import User from "@/lib/models/User";
-import OTPVerification from "@/lib/models/OTPVerification";
+import User from "@/models/User";
+import OTPVerification from "@/models/OTPVerification";
 import { sendOTPEmail } from "@/lib/email";
 import crypto from "crypto";
 

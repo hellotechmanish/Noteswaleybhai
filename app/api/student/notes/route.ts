@@ -1,5 +1,5 @@
 import { getTokenPayload } from "@/lib/getTokenPayload";
-import User from "@/lib/models/User";
+import User from "@/models/User";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectionToDb } from "@/lib/mongodb"; // ✅ FIXED
@@ -25,11 +25,10 @@ export async function GET() {
     // .populate({
     //   path: "notes",
     //   select:
-    //     "title university course year semester status views downloads earnedAmount createdAt uploadedBy",
+    //     "title university course year semester status views downloads earnedAmount createdAt userId",
     //   options: { sort: { createdAt: -1 } },
     // });
     // console.log("userData notes", userData);
-
 
     return NextResponse.json({
       success: true,

@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
-import Note from "@/lib/models/Note";
+import Note from "@/models/Note";
 import { createClient } from "@supabase/supabase-js";
 import { connectionToDb } from "@/lib/mongodb";
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       year,
       semester,
 
-      uploadedBy: payload.userId,
+      userId: payload.userId,
 
       fileUrl,
       supabaseSignedUrl: signedUrlData?.signedUrl,

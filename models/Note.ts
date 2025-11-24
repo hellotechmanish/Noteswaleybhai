@@ -8,7 +8,7 @@ export interface INote extends Document {
   year: string;
   semester: string;
 
-  uploadedBy: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
 
   fileUrl: string;
   supabaseSignedUrl: string;
@@ -36,7 +36,7 @@ const NoteSchema = new Schema<INote>(
     year: { type: String, required: true },
     semester: { type: String, required: true },
 
-    uploadedBy: {
+    userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
