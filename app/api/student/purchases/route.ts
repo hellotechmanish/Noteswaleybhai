@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
-import dbConnect from "@/lib/mongodb";
 import Payment from "@/models/Payment";
+import { connectionToDb } from "@/lib/mongodb";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    await dbConnect();
+    await connectionToDb();
     const payments = await Payment.find({
       userId: payload.userId,
       status: "completed",
