@@ -6,6 +6,7 @@ import { ModuleRegistry, AllCommunityModule, ColDef } from "ag-grid-community";
 import { iconSetQuartzLight } from "ag-grid-community";
 
 import { themeQuartz } from "ag-grid-community";
+import { Button } from "../ui/button";
 
 // Register AG Grid Community Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -21,10 +22,7 @@ interface NoteRow {
   views: number;
   downloads: number;
   earnedAmount: number;
-  uploadedBy: {
-    firstName: string;
-    lastName: string;
-  };
+  supabaseSignedUrl: string;
 }
 
 export default function NotesTable() {
@@ -74,6 +72,7 @@ export default function NotesTable() {
     (async () => {
       const res = await fetch("/api/student/notes");
       const data = await res.json();
+      console.log("data>data", data.data);
 
       if (data.success) {
         setRowData(data.data);
@@ -102,8 +101,19 @@ export default function NotesTable() {
     const u = params.data.uploadedBy;
     return (
       <span className="font-medium text-gray-900 dark:text-white">
-        {u.firstName} {u.lastName}
+        {u?.firstName} {u?.lastName}
       </span>
+    );
+  }, []);
+
+  const Pdfrender = useCallback((params: any) => {
+    return (
+      <Button
+        onClick={() => window.open(params.value, "_blank")}
+        className="h-8 px-3 text-xs rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+      >
+        View
+      </Button>
     );
   }, []);
 
@@ -183,10 +193,10 @@ export default function NotesTable() {
         cellRenderer: amountRenderer,
       },
       {
-        headerName: "Uploaded By",
-        minWidth: 160,
-        cellRenderer: uploaderRenderer,
-        flex: 1.1,
+        field: "supabaseSignedUrl",
+        headerName: "Earned",
+        minWidth: 110,
+        cellRenderer: Pdfrender,
       },
     ],
     [textRenderer, amountRenderer, uploaderRenderer]
@@ -200,8 +210,18 @@ export default function NotesTable() {
 
   if (!rowData.length) {
     return (
-      <div className="w-full flex justify-center items-center py-20 text-gray-600 dark:text-gray-300">
-        Loading notes...
+      <div className="w-full flex flex-col items-center justify-center py-24 text-center">
+        <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <span className="text-gray-400 dark:text-gray-500 text-xl">—</span>
+        </div>
+
+        <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
+          No data
+        </h3>
+
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+          There is no information available to display right now.
+        </p>
       </div>
     );
   }
@@ -218,7 +238,7 @@ export default function NotesTable() {
 
             <div className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full inline-block">
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                {rowData.length} notes uploaded
+                | {rowData.length} | Notes uploaded
               </span>
             </div>
           </div>

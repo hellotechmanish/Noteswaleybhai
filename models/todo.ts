@@ -4,13 +4,18 @@ export interface ITodo extends Document {
   title: string;
   description: string;
   date: Date;
+  category: string;
   userId: mongoose.Types.ObjectId;
 }
 
 const TodoSchema = new Schema<ITodo>({
   title: { type: String, required: true },
   description: String,
-  date: Date,
+  date: { type: Date, required: true },
+  category: {
+    type: String,
+    enum: ["Urgent", "Non-Urgent"],
+  },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 

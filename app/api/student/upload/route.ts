@@ -1,10 +1,10 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/jwt";
 import Note from "@/models/Note";
 import { createClient } from "@supabase/supabase-js";
 import { connectionToDb } from "@/lib/mongodb";
+import { getTokenPayload } from "@/lib/getTokenPayload";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -14,14 +14,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("authToken")?.value;
-    if (!token)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const payload = await verifyToken(token);
-    if (!payload)
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-
+    const user = await getTokenPayload();
     const formData = await request.formData();
 
     const university = formData.get("university") as string;
@@ -39,60 +32,83 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (file.size > 5 * 1024 * 1024)
+    if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
         { error: "File too large. Max 5MB allowed." },
         { status: 400 }
       );
+    }
 
-    if (file.type !== "application/pdf")
+    if (file.type !== "application/pdf") {
       return NextResponse.json(
         { error: "Only PDF files allowed." },
         { status: 400 }
       );
+    }
+
+    await connectionToDb();
+
+    // ✅ DUPLICATE CHECK (same user + same academic info + same title)
+    const alreadyExists = await Note.findOne({
+      title,
+      university,
+      course,
+      year,
+      semester,
+      userId: user.userId,
+    });
+
+    if (alreadyExists) {
+      return NextResponse.json(
+        { error: "This note already exists." },
+        { status: 409 }
+      );
+    }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = `${payload.userId}/${fileName}`;
+    const fileName = file.name.replace(/\s+/g, "_");
+    const filePath = `${user.userId}/${fileName}`;
 
-    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from("noteswaleybhai")
-      .upload(filePath, buffer, { contentType: "application/pdf" });
+      .upload(filePath, buffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
 
     if (uploadError) {
-      console.error("Upload Error:", uploadError);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    // Public URL
     const { data: publicUrlData } = supabase.storage
       .from("noteswaleybhai")
       .getPublicUrl(filePath);
 
     const fileUrl = publicUrlData.publicUrl;
 
-    // Signed URL (1 week)
-    const { data: signedUrlData } = await supabase.storage
+    const { data: signedData, error: signedError } = await supabase.storage
       .from("noteswaleybhai")
       .createSignedUrl(filePath, 60 * 60 * 24 * 7);
 
-    await connectionToDb();
+    if (signedError) {
+      return NextResponse.json(
+        { error: "Signed URL generation failed" },
+        { status: 500 }
+      );
+    }
+
+    const supabaseSignedUrl = signedData.signedUrl;
 
     const note = await Note.create({
       title,
       description,
-
       university,
       course,
       year,
       semester,
-
-      userId: payload.userId,
-
+      userId: user.userId,
       fileUrl,
-      supabaseSignedUrl: signedUrlData?.signedUrl,
-
+      supabaseSignedUrl,
       status: "pending",
     });
 
