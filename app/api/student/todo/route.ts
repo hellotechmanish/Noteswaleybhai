@@ -18,9 +18,7 @@ export async function GET() {
 
     const todos = await Todo.find({
       userId: new mongoose.Types.ObjectId(user.userId),
-    }).sort({
-      createdAt: -1,
-    });
+    }).sort({ createdAt: -1 });
     console.log("todos", todos);
 
     return NextResponse.json({

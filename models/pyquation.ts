@@ -20,6 +20,6 @@ const PrevYearquation = new mongoose.Schema({
 });
 
 // this is the test
-const Pyquation =
+const Pyquation =   
   mongoose.models.Pyquation<IPyquation> ||
   mongoose.model<IPyquation>("Pyquation", PrevYearquation);
