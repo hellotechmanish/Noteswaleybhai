@@ -6,10 +6,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">Student Notes</h1>
-          <p className="text-muted-foreground">Access quality study materials</p>
+          <p className="text-muted-foreground">
+            Access quality study materials
+          </p>
         </div>
+        {/* Login form */}
         <LoginForm />
       </div>
     </main>
-  )
+  );
 }

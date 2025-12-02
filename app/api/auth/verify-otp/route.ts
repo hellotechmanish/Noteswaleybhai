@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
       expiresAt: { $gt: new Date() },
     }).sort({ createdAt: -1 });
 
+    // If no valid OTP found
     if (!otpRecord) {
       return NextResponse.json(
         { error: "Invalid or expired OTP" },
