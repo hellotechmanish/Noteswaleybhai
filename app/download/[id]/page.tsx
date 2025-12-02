@@ -6,7 +6,7 @@ import { PDFViewer } from '@/components/pdf/pdf-viewer'
 interface PageProps {
   params: { id: string }
 }
-
+// Download page component  
 export default function DownloadPage({ params }: PageProps) {
   const [userEmail, setUserEmail] = useState('')
 

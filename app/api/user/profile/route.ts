@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
-import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
+import { connect } from "http2";
+import { connectionToDb } from "@/lib/mongodb";
 
+// Get user profile
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("authToken")?.value;
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    await dbConnect();
+    await connectionToDb();
     const user = await User.findById(payload.userId).select("-password");
 
     if (!user) {
