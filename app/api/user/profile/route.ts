@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       id: user._id,
-      name: user.name,
+      name: user.firstName + " " + user.lastName,
       email: user.email,
       role: user.role,
     });
