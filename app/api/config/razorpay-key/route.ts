@@ -1,21 +1,22 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
+// this is the razorpay key route
 export async function GET() {
   try {
-    const keyId = process.env.RAZORPAY_KEY_ID
+    const keyId = process.env.RAZORPAY_KEY_ID;
 
     if (!keyId) {
       return NextResponse.json(
-        { error: 'Razorpay key not configured' },
+        { error: "Razorpay key not configured" },
         { status: 500 }
-      )
+      );
     }
 
-    return NextResponse.json({ keyId })
+    return NextResponse.json({ keyId });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to get Razorpay key' },
+      { error: "Failed to get Razorpay key" },
       { status: 500 }
-    )
+    );
   }
 }
