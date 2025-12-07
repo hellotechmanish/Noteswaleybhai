@@ -40,4 +40,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// this is the minor change
