@@ -39,5 +39,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// this for test changes
