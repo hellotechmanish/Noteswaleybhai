@@ -1,4 +1,4 @@
 build:
-    scripts:
+    script:
         - echo "first step"
         - echo "second step"
