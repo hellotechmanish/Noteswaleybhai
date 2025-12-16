@@ -1,4 +1,10 @@
-build:
-    script:
-        - echo "first step"
-        
+stages:
+  - build
+
+build_job:
+  stage: build
+  script:
+    - echo "first step"
+    - echo "build stage running successfully"
+    - echo "last step"
+    - echo "this is the end of build stage"
