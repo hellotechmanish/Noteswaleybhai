@@ -6,5 +6,7 @@ build_job:
   script:
     - echo "first step"
     - echo "build stage running successfully"
+    - node -v
+    - npm -v
     - echo "last step"
     - echo "this is the end of build stage"
