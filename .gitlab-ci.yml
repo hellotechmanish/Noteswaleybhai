@@ -1,4 +1,3 @@
-
 image: node:22
 stages:
   - build
@@ -10,5 +9,7 @@ build_job:
     - echo "build stage running successfully"
     - node -v
     - npm -v
+    - npm install
+    - npm run build
     - echo "last step"
     - echo "this is the end of build stage"
