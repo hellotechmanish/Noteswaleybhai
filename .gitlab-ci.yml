@@ -8,7 +8,9 @@ build_job:
     - echo "first step"
     - echo "build stage running successfully"
     - node -v
+    - echo "node version checked"
     - npm -v
+    - echo "npm version checked"
     - npm install
     - npm run build
     - echo "last step"
