@@ -8,6 +8,8 @@ export interface ISubject extends Document {
   credits: number;
 }
 
+// this is  the schema for subjects
+
 const SubjectSchema = new Schema<ISubject>(
   {
     name: {

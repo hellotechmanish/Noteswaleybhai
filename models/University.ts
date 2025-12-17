@@ -29,31 +29,26 @@
 
 import mongoose from "mongoose";
 
-// Year-wise papers
 const PaperSchema = new mongoose.Schema({
-  year: { type: String, required: true }, // e.g., "2024-2025", "2023"
-  files: [{ type: String, required: true }], // PDFs URLs
+  year: { type: String, required: true },
+  files: [{ type: String, required: true }],
 });
 
-// Subjects inside semester
 const SubjectSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // e.g., "Mathematics"
-  papers: [PaperSchema], // years + files[]
+  name: { type: String, required: true },
+  papers: [PaperSchema],
 });
 
-// Semester inside course
 const SemesterSchema = new mongoose.Schema({
-  number: { type: String, required: true }, // e.g., "1", "2"
+  number: { type: String, required: true },
   subjects: [SubjectSchema],
 });
 
-// Course inside university
 const CourseSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // e.g., "BCA", "B.Sc CS"
+  University: { type: String, required: true },
   semesters: [SemesterSchema],
 });
 
-// Main University schema
 const UniversitySchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
@@ -62,5 +57,7 @@ const UniversitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.University ||
-  mongoose.model("University", UniversitySchema);
+const University =
+  mongoose.models.University || mongoose.model("University", UniversitySchema);
+
+export default University;

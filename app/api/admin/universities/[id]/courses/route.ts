@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: any) {
 
     uni.courses.push({
       name: body.name,
-      semesters: [],
+      semesters: []
     });
 
     await uni.save();
