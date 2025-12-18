@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ISubject extends Document {
   name: string;
@@ -8,7 +8,7 @@ export interface ISubject extends Document {
   credits: number;
 }
 
-// this is  
+// this is the schema for subjects
 
 const SubjectSchema = new Schema<ISubject>(
   {
@@ -22,7 +22,7 @@ const SubjectSchema = new Schema<ISubject>(
     },
     courseId: {
       type: Schema.Types.ObjectId,
-      ref: 'Course',
+      ref: "Course",
       required: true,
     },
     semester: Number,
@@ -31,4 +31,5 @@ const SubjectSchema = new Schema<ISubject>(
   { timestamps: true }
 );
 
-export default mongoose.models.Subject || mongoose.model<ISubject>('Subject', SubjectSchema);
+export default mongoose.models.Subject ||
+  mongoose.model<ISubject>("Subject", SubjectSchema);
